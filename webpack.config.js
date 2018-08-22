@@ -42,7 +42,7 @@ module.exports = {
         }),
         new ExtractTextPlugin('styles.css'),
         new HtmlPlugin({
-            title: 'Friends',
+            title: 'Другофильтр',
             template: 'friends.hbs',
             filename: 'friends.html',
             chunks: ['friends']
