@@ -1,5 +1,5 @@
 import './styles/styles.scss';
-import { resolve } from 'path';
+import renderFriendsFn from './../friend.hbs';
 
 VK.init({
     apiId: 6670397
@@ -34,14 +34,11 @@ function callAPI(method, params) {
 
 auth()
     .then(() => {
-        return callAPI('friends.get', {fields: 'photo_100'})
+        return callAPI('friends.get', { fields: 'photo_50' })
     })
     .then((friends) => {
-        console.log(friends)   
-        const template = document.querySelector('#user-template') ;
-        const render = Handlebars.compile(template);
-        const html = render(friends.items);
-        const results = document.querySelector('.search-content__list--friend') ;
+        const html = renderFriendsFn({ items: friends.items })
+        const results = document.querySelector('.search-content__list--friend');
 
         results.innerHTML = html;
     })
