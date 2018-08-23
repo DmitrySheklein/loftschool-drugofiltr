@@ -28,6 +28,7 @@ body {
   line-height: 1;
   font-weight: 300;
   cursor: pointer;
+  outline: none;
   transition: $transition;
 
   &:hover {
@@ -196,10 +197,10 @@ body {
     align-items: center;
     padding: 6px;
     border-bottom: 1px solid #f0f0f0;
-
+    transition: $transition;
+    
     &:hover {
       background: #f0f0f0;
-      transition: $transition;
     }
 
     &-photo {

@@ -42,7 +42,7 @@ module.exports = {
         }),
         new ExtractTextPlugin('styles.css'),
         new HtmlPlugin({
-            title: 'Другофильтр',
+            title: 'Loftschool JS - Другофильтр',
             template: 'friends.hbs',
             filename: 'friends.html',
             chunks: ['friends']
