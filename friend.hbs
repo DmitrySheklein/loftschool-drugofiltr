@@ -4,6 +4,10 @@
             <img src="{{photo_50}}" alt="">
         </div>
         <div class="search-content__item-name">{{first_name}} {{last_name}}</div>
-        <button class="search-content__item-btn search-content__item-btn--add" type="button"></button>
+        {{#if ../isLeft}}
+        <button data-id="{{id}}" data-action="add" class="search-content__item-btn search-content__item-btn--add" type="button">Добавить</button>
+        {{else}}
+        <button data-id="{{id}}" data-action="delete" class="search-content__item-btn search-content__item-btn--delete" type="button">Удалить</button>
+        {{/if}}
     </li>
 {{/each}}

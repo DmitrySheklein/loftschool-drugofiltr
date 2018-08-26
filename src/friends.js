@@ -1,6 +1,23 @@
 import './styles/styles.scss';
 import renderFriendsFn from './../friend.hbs';
 
+let user = {
+    vkFriendsList: [],
+    localFriendsList: []
+}
+const resultsFriend = document.querySelector('.search-content__list--friend');
+const resultsFilter = document.querySelector('.search-content__list--filter');
+const searchBody = document.querySelector('.search-content');
+
+searchBody.addEventListener('click', (evt) => {
+    if (evt.target.classList.contains('search-content__item-btn')) {
+        let id = evt.target.dataset.id;
+        let action = evt.target.dataset.action;
+
+        (action === 'add') ? addToLocalFriendsList(id) : removeFromLocalFriensList(id);
+    }
+})
+
 VK.init({
     apiId: 6670397
 });
@@ -34,11 +51,49 @@ function callAPI(method, params) {
 
 auth()
     .then(() => {
-        return callAPI('friends.get', { fields: 'photo_50' })
+        return callAPI('friends.get', { fields: 'photo_50', count: 5, order: 'random' })
     })
     .then((friends) => {
-        const html = renderFriendsFn({ items: friends.items })
-        const results = document.querySelector('.search-content__list--friend');
-
-        results.innerHTML = html;
+        user.vkFriendsList = friends.items;
+        renderLists()
     })
+
+function renderLists() {
+    const htmlFriend = renderFriendsFn({ items: user.vkFriendsList, isLeft: true })
+    const htmlFilter = renderFriendsFn({ items: user.localFriendsList, isLeft: false })
+
+    clearLists();
+    resultsFriend.innerHTML = htmlFriend;
+    resultsFilter.innerHTML = htmlFilter;
+}
+
+function clearLists() {
+    resultsFriend.innerHTML = '';
+    resultsFilter.innerHTML = '';
+}
+
+function addToLocalFriendsList(id) {
+    let friend = user.vkFriendsList.find((item)=>{
+        return item.id === Number(id);
+    })
+    
+    user.localFriendsList.push(friend);
+
+    user.vkFriendsList = user.vkFriendsList.filter((item)=> {
+        return item.id !== Number(id);
+    })    
+    renderLists()
+}
+
+function removeFromLocalFriensList(id) {
+    let friend = user.localFriendsList.find((item)=>{
+        return item.id === Number(id);
+    })
+    
+    user.vkFriendsList.push(friend);
+
+    user.localFriendsList = user.localFriendsList.filter((item)=> {
+        return item.id !== Number(id);
+    })
+    renderLists()
+}
