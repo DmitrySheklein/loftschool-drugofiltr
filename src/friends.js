@@ -61,7 +61,8 @@ auth()
 function renderLists() {
     const htmlFriend = renderFriendsFn({ items: user.vkFriendsList, isLeft: true })
     const htmlFilter = renderFriendsFn({ items: user.localFriendsList, isLeft: false })
-
+    console.log(user.vkFriendsList, user.localFriendsList);
+    
     clearLists();
     resultsFriend.innerHTML = htmlFriend;
     resultsFilter.innerHTML = htmlFilter;
@@ -72,28 +73,46 @@ function clearLists() {
     resultsFilter.innerHTML = '';
 }
 
-function addToLocalFriendsList(id) {
-    let friend = user.vkFriendsList.find((item)=>{
-        return item.id === Number(id);
-    })
-    
-    user.localFriendsList.push(friend);
+function addToLocalFriendsList(id) { 
+    // moveToArray(id, user.vkFriendsList, user.localFriendsList)
 
-    user.vkFriendsList = user.vkFriendsList.filter((item)=> {
-        return item.id !== Number(id);
-    })    
+      let friend = user.vkFriendsList.find((item) => {
+          return item.id === Number(id);
+      })
+
+      user.localFriendsList.push(friend);
+
+      user.vkFriendsList = user.vkFriendsList.filter((item) => {
+          return item.id !== Number(id);
+      })
+
     renderLists()
 }
 
 function removeFromLocalFriensList(id) {
-    let friend = user.localFriendsList.find((item)=>{
-        return item.id === Number(id);
-    })
-    
-    user.vkFriendsList.push(friend);
+    // moveToArray(id, user.localFriendsList, user.vkFriendsList);
 
-    user.localFriendsList = user.localFriendsList.filter((item)=> {
-        return item.id !== Number(id);
-    })
+      let friend = user.localFriendsList.find((item) => {
+          return item.id === Number(id);
+      })
+
+      user.vkFriendsList.push(friend);
+
+      user.localFriendsList = user.localFriendsList.filter((item) => {
+          return item.id !== Number(id);
+      })
+
     renderLists()
+}
+
+function moveToArray(id, firstArr, secondArr) {
+      let friend = firstArr.find((item) => {
+          return item.id === Number(id);
+      })
+
+      secondArr.push(friend);
+
+      firstArr = firstArr.filter((item) => {
+          return item.id !== Number(id);
+      })
 }
