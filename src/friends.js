@@ -5,9 +5,25 @@ let user = {
     vkFriendsList: [],
     localFriendsList: []
 }
-const resultsFriend = document.querySelector('.search-content__list--friend');
-const resultsFilter = document.querySelector('.search-content__list--filter');
+let filter = {
+    vkFilterInput: '',
+    localeFilterInput: ''
+}
+const vkContainer = document.querySelector('.search-content__list--friend');
+const localeContainer = document.querySelector('.search-content__list--filter');
+const vkFriendsInput = document.querySelector('.search__input--friend');
+const localeFriendsInput = document.querySelector('.search__input--filter');
 const searchBody = document.querySelector('.search-content');
+
+vkFriendsInput.addEventListener('keyup', (evt) => {
+    filter.vkFilterInput = evt.target.value.trim();
+    renderLists()        
+})
+
+localeFriendsInput.addEventListener('keyup', (evt) => {
+    filter.localeFilterInput = evt.target.value.trim();  
+    renderLists()
+})
 
 searchBody.addEventListener('click', (evt) => {
     if (evt.target.classList.contains('search-content__item-btn')) {
@@ -19,7 +35,7 @@ searchBody.addEventListener('click', (evt) => {
 })
 
 VK.init({
-    apiId: 6670397
+    apiId: 6674281
 });
 
 function auth() {
@@ -51,68 +67,113 @@ function callAPI(method, params) {
 
 auth()
     .then(() => {
-        return callAPI('friends.get', { fields: 'photo_50', count: 5, order: 'random' })
+        return callAPI('friends.get', { fields: 'photo_50', count: 10, order: 'random' })
     })
     .then((friends) => {
         user.vkFriendsList = friends.items;
         renderLists()
     })
 
+function renderList(items, container, isLeft = false) {
+    let html = renderFriendsFn({
+        items: items,
+        isLeft: isLeft
+    })
+
+    container.innerHTML = html;    
+}
 function renderLists() {
-    const htmlFriend = renderFriendsFn({ items: user.vkFriendsList, isLeft: true })
-    const htmlFilter = renderFriendsFn({ items: user.localFriendsList, isLeft: false })
-    console.log(user.vkFriendsList, user.localFriendsList);
-    
     clearLists();
-    resultsFriend.innerHTML = htmlFriend;
-    resultsFilter.innerHTML = htmlFilter;
+    
+    let vkFriendsFilterArr = []
+
+    user.vkFriendsList.forEach((friend)=> {
+        if (filter.vkFilterInput.length === 0) {
+            renderList(user.vkFriendsList, vkContainer, true);
+        } else if (isMatching(friend.first_name, filter.vkFilterInput) || isMatching(friend.last_name, filter.vkFilterInput)) {
+            vkFriendsFilterArr.push(friend)
+            renderList(vkFriendsFilterArr, vkContainer, true)
+        }
+    })
+
+    let localFriendsFilterArr = []
+
+    user.localFriendsList.forEach((friend)=> {
+        if (filter.localeFilterInput.length === 0) {
+            renderList(user.localFriendsList, localeContainer, false);
+        } else if (isMatching(friend.first_name, filter.localeFilterInput) || isMatching(friend.last_name, filter.localeFilterInput)) {
+            localFriendsFilterArr.push(friend)
+            renderList(localFriendsFilterArr, localeContainer, false)
+        }
+    })
+   
 }
 
 function clearLists() {
-    resultsFriend.innerHTML = '';
-    resultsFilter.innerHTML = '';
+    vkContainer.innerHTML = '';
+    localeContainer.innerHTML = '';
 }
 
 function addToLocalFriendsList(id) { 
-    // moveToArray(id, user.vkFriendsList, user.localFriendsList)
-
-      let friend = user.vkFriendsList.find((item) => {
-          return item.id === Number(id);
-      })
-
-      user.localFriendsList.push(friend);
-
-      user.vkFriendsList = user.vkFriendsList.filter((item) => {
-          return item.id !== Number(id);
-      })
-
-    renderLists()
+    moveToArray(id, user.vkFriendsList, user.localFriendsList);
+    renderLists();
 }
 
 function removeFromLocalFriensList(id) {
-    // moveToArray(id, user.localFriendsList, user.vkFriendsList);
-
-      let friend = user.localFriendsList.find((item) => {
-          return item.id === Number(id);
-      })
-
-      user.vkFriendsList.push(friend);
-
-      user.localFriendsList = user.localFriendsList.filter((item) => {
-          return item.id !== Number(id);
-      })
-
-    renderLists()
+    moveToArray(id, user.localFriendsList, user.vkFriendsList);
+    renderLists();
 }
 
 function moveToArray(id, firstArr, secondArr) {
-      let friend = firstArr.find((item) => {
-          return item.id === Number(id);
-      })
+    let friend = firstArr.find((item) => {
+        return item.id === Number(id);
+    })
 
-      secondArr.push(friend);
+    secondArr.push(friend);
 
-      firstArr = firstArr.filter((item) => {
-          return item.id !== Number(id);
-      })
+    let index = firstArr.findIndex((item) => {
+        return item.id === Number(id);
+    })
+
+    firstArr.splice(index, 1);
+}
+function changeArray(id, array, element) {
+    let index = array.findIndex((item) => {
+        return item.id === Number(id);
+    })
+    
+    array.splice(index, 0, element);
+    console.log(array)
+}
+function isMatching(full, chunk) {
+    return (full.toLowerCase().indexOf(chunk.toLowerCase()) !== -1) ? true : false;
+}
+makeDnd([vkContainer, localeContainer])
+function makeDnd(zones) {
+    let currentDrag = null;
+
+    zones.forEach(zone => {
+        zone.addEventListener('dragstart', evt => {
+            currentDrag = { sourse: zone, node: evt.target, nodeId: evt.target.dataset.id };           
+        })
+        zone.addEventListener('dragover', evt => {
+            evt.preventDefault()
+        })
+        zone.addEventListener('drop', evt => {
+            if (currentDrag) {
+                evt.preventDefault();
+
+                if (currentDrag.sourse !== zone) {
+
+                    if (currentDrag.sourse.classList.contains('search-content__list--friend')) {
+                        addToLocalFriendsList(currentDrag.nodeId))
+                    } else if (currentDrag.sourse.classList.contains('search-content__list--filter')) {
+                        removeFromLocalFriensList(currentDrag.nodeId)
+                    }
+
+                    currentDrag = null;
+                }
+            }
+        })
+    })
 }
