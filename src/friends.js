@@ -14,6 +14,12 @@ const localeContainer = document.querySelector('.search-content__list--filter');
 const vkFriendsInput = document.querySelector('.search__input--friend');
 const localeFriendsInput = document.querySelector('.search__input--filter');
 const searchBody = document.querySelector('.search-content');
+const saveBtn = document.querySelector('.btn--save');
+
+saveBtn.addEventListener('click', () => {
+    localStorage.setItem('friendsVk', JSON.stringify(user.vkFriendsList))
+    localStorage.setItem('friendsLocal', JSON.stringify(user.localFriendsList))
+})
 
 vkFriendsInput.addEventListener('keyup', (evt) => {
     filter.vkFilterInput = evt.target.value.trim();
@@ -33,46 +39,59 @@ searchBody.addEventListener('click', (evt) => {
         (action === 'add') ? addToLocalFriendsList(id) : removeFromLocalFriensList(id);
     }
 })
+function init() {
+    if (localStorage.getItem('friendsVk') !== null || localStorage.getItem('friendsLocal') !== null) {
+        user.vkFriendsList = JSON.parse(localStorage.getItem('friendsVk')) || [];
+        user.localFriendsList = JSON.parse(localStorage.getItem('friendsLocal'))|| [];
+        renderLists();
 
-VK.init({
-    apiId: 6674281
-});
-
-function auth() {
-    return new Promise((resolve, reject) => {
-        VK.Auth.login(data => {
-            if (data.session) {
-                resolve()
-            } else {
-                reject(new Error('Не удалось авторизоваться'))
-            }
-        }, 2)
-    })
+        return;
+    }
+    vkInit();
 }
 
-function callAPI(method, params) {
-    params.v = '5.80';
-
-    return new Promise((resolve, reject) => {
-        VK.api(method, params, (data) => {
-            if (data.error) {
-                reject(data.error);
-            } else {
-                resolve(data.response);
-            }
+function vkInit() {
+    VK.init({
+        apiId: 6674281
+    });
+    
+    function auth() {
+        return new Promise((resolve, reject) => {
+            VK.Auth.login(data => {
+                if (data.session) {
+                    resolve()
+                } else {
+                    reject(new Error('Не удалось авторизоваться'))
+                }
+            }, 2)
         })
-    })
+    }
+    
+    function callAPI(method, params) {
+        params.v = '5.80';
+    
+        return new Promise((resolve, reject) => {
+            VK.api(method, params, (data) => {
+                if (data.error) {
+                    reject(data.error);
+                } else {
+                    resolve(data.response);
+                }
+            })
+        })
+    
+    }
+    
+    auth()
+        .then(() => {
+            return callAPI('friends.get', { fields: 'photo_50', count: 10, order: 'random' })
+        })
+        .then((friends) => {
+            user.vkFriendsList = friends.items;
+            renderLists()
+        })
 
 }
-
-auth()
-    .then(() => {
-        return callAPI('friends.get', { fields: 'photo_50', count: 10, order: 'random' })
-    })
-    .then((friends) => {
-        user.vkFriendsList = friends.items;
-        renderLists()
-    })
 
 function renderList(items, container, isLeft = false) {
     let html = renderFriendsFn({
@@ -85,27 +104,30 @@ function renderList(items, container, isLeft = false) {
 function renderLists() {
     clearLists();
     
-    let vkFriendsFilterArr = []
-
-    user.vkFriendsList.forEach((friend)=> {
-        if (filter.vkFilterInput.length === 0) {
-            renderList(user.vkFriendsList, vkContainer, true);
-        } else if (isMatching(friend.first_name, filter.vkFilterInput) || isMatching(friend.last_name, filter.vkFilterInput)) {
-            vkFriendsFilterArr.push(friend)
-            renderList(vkFriendsFilterArr, vkContainer, true)
-        }
-    })
-
-    let localFriendsFilterArr = []
-
-    user.localFriendsList.forEach((friend)=> {
-        if (filter.localeFilterInput.length === 0) {
-            renderList(user.localFriendsList, localeContainer, false);
-        } else if (isMatching(friend.first_name, filter.localeFilterInput) || isMatching(friend.last_name, filter.localeFilterInput)) {
-            localFriendsFilterArr.push(friend)
-            renderList(localFriendsFilterArr, localeContainer, false)
-        }
-    })
+    if (user.vkFriendsList.length) {
+        let vkFriendsFilterArr = []
+    
+        user.vkFriendsList.forEach((friend)=> {
+            if (filter.vkFilterInput.length === 0) {
+                renderList(user.vkFriendsList, vkContainer, true);
+            } else if (isMatching(friend.first_name, filter.vkFilterInput) || isMatching(friend.last_name, filter.vkFilterInput)) {
+                vkFriendsFilterArr.push(friend)
+                renderList(vkFriendsFilterArr, vkContainer, true)
+            }
+        })
+    }
+    if (user.localFriendsList.length) {
+        let localFriendsFilterArr = []
+    
+        user.localFriendsList.forEach((friend)=> {
+            if (filter.localeFilterInput.length === 0) {
+                renderList(user.localFriendsList, localeContainer, false);
+            } else if (isMatching(friend.first_name, filter.localeFilterInput) || isMatching(friend.last_name, filter.localeFilterInput)) {
+                localFriendsFilterArr.push(friend)
+                renderList(localFriendsFilterArr, localeContainer, false)
+            }
+        })        
+    }
    
 }
 
@@ -196,3 +218,5 @@ function makeDnd(zones) {
         })
     })
 }
+
+init();
