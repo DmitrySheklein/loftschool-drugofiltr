@@ -137,13 +137,22 @@ function moveToArray(id, firstArr, secondArr) {
 
     firstArr.splice(index, 1);
 }
-function changeArray(id, array, element) {
+function changeArray(id, array, elementId, arrayWithELement) {
     let index = array.findIndex((item) => {
         return item.id === Number(id);
     })
     
+    let element = arrayWithELement.find((item)=>{
+        return item.id === Number(elementId);
+    })
+    
     array.splice(index, 0, element);
-    console.log(array)
+
+    let indexDeleteElement = arrayWithELement.findIndex((item) => {
+        return item.id === Number(elementId);
+    })
+
+    arrayWithELement.splice(indexDeleteElement, 1);    
 }
 function isMatching(full, chunk) {
     return (full.toLowerCase().indexOf(chunk.toLowerCase()) !== -1) ? true : false;
@@ -166,9 +175,19 @@ function makeDnd(zones) {
                 if (currentDrag.sourse !== zone) {
 
                     if (currentDrag.sourse.classList.contains('search-content__list--friend')) {
-                        addToLocalFriendsList(currentDrag.nodeId))
+                        if (evt.target.classList.contains('search-content__item')) {
+                            changeArray(evt.target.dataset.id, user.localFriendsList, currentDrag.nodeId, user.vkFriendsList);
+                            renderLists()                        
+                        } else {
+                            addToLocalFriendsList(currentDrag.nodeId)
+                        }
                     } else if (currentDrag.sourse.classList.contains('search-content__list--filter')) {
-                        removeFromLocalFriensList(currentDrag.nodeId)
+                        if (evt.target.classList.contains('search-content__item')) {
+                            changeArray(evt.target.dataset.id, user.vkFriendsList, currentDrag.nodeId, user.localFriendsList);
+                            renderLists()      
+                        } else {
+                            removeFromLocalFriensList(currentDrag.nodeId)
+                        }
                     }
 
                     currentDrag = null;
