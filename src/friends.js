@@ -9,6 +9,7 @@ let filter = {
     vkFilterInput: '',
     localeFilterInput: ''
 }
+
 const vkContainer = document.querySelector('.search-content__list--friend');
 const localeContainer = document.querySelector('.search-content__list--filter');
 const vkFriendsInput = document.querySelector('.search__input--friend');
@@ -17,8 +18,11 @@ const searchBody = document.querySelector('.search-content');
 const saveBtn = document.querySelector('.btn--save');
 
 saveBtn.addEventListener('click', () => {
-    localStorage.setItem('friendsVk', JSON.stringify(user.vkFriendsList))
-    localStorage.setItem('friendsLocal', JSON.stringify(user.localFriendsList))
+    localStorage.setItem('friendsVk', JSON.stringify(user.vkFriendsList));
+    localStorage.setItem('friendsLocal', JSON.stringify(user.localFriendsList));
+    let notification = new Notification('Список друзей сохранён');
+
+    notification.show().hide(3000)
 })
 
 vkFriendsInput.addEventListener('keyup', (evt) => {
@@ -41,6 +45,9 @@ searchBody.addEventListener('click', (evt) => {
 })
 function init() {
     if (localStorage.getItem('friendsVk') !== null || localStorage.getItem('friendsLocal') !== null) {
+        let notification = new Notification('Загружен локальный список');
+
+        notification.show().hide(3000);
         user.vkFriendsList = JSON.parse(localStorage.getItem('friendsVk')) || [];
         user.localFriendsList = JSON.parse(localStorage.getItem('friendsLocal'))|| [];
         renderLists();
@@ -216,6 +223,40 @@ function makeDnd(zones) {
             }
         })
     })
+}
+
+function Notification(text) {
+    this.block = createNotificationBlock();
+    this.show = () => {
+        this.block.style.display = 'block';
+        this.block.innerText = text;
+
+        return this;
+    },
+    this.hide = (ms) => {
+        setTimeout(() => {
+            this.block.style.display = 'none';
+            this.remove();
+        }, ms);
+
+        return this;
+    }
+    this.remove = () => {
+        if (document.querySelector('.notification')) {
+            document.querySelector('.notification').remove()
+        }
+    }
+    function createNotificationBlock() {
+        let div = document.createElement('div');
+
+        div.classList.add('notification')
+
+        return div;
+    }
+
+    if (!document.querySelector('.notification')) {
+        document.body.appendChild(this.block)
+    }
 }
 
 init();

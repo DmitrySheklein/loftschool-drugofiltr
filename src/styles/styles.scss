@@ -246,3 +246,16 @@ body {
 .search-footer {
   padding: 7px;
 }
+
+.notification {
+  display: none;
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: $orange;
+  color: #fff;
+  padding: 8px;
+  text-align: center;
+}
