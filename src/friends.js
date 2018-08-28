@@ -84,7 +84,7 @@ function vkInit() {
     
     auth()
         .then(() => {
-            return callAPI('friends.get', { fields: 'photo_50', count: 10, order: 'random' })
+            return callAPI('friends.get', { fields: 'photo_50', order: 'random' })
         })
         .then((friends) => {
             user.vkFriendsList = friends.items;
@@ -105,28 +105,27 @@ function renderLists() {
     clearLists();
     
     if (user.vkFriendsList.length) {
-        let vkFriendsFilterArr = []
-    
-        user.vkFriendsList.forEach((friend)=> {
-            if (filter.vkFilterInput.length === 0) {
-                renderList(user.vkFriendsList, vkContainer, true);
-            } else if (isMatching(friend.first_name, filter.vkFilterInput) || isMatching(friend.last_name, filter.vkFilterInput)) {
-                vkFriendsFilterArr.push(friend)
-                renderList(vkFriendsFilterArr, vkContainer, true)
-            }
-        })
+        if (filter.vkFilterInput.length > 0) {
+            let vkFilteredArray = user.vkFriendsList.filter((friend)=>{
+                return isMatching(friend.first_name, filter.vkFilterInput) || isMatching(friend.last_name, filter.vkFilterInput)
+            })
+
+            renderList(vkFilteredArray, vkContainer, true);
+        } else {
+            renderList(user.vkFriendsList, vkContainer, true);
+        }
+
     }
     if (user.localFriendsList.length) {
-        let localFriendsFilterArr = []
-    
-        user.localFriendsList.forEach((friend)=> {
-            if (filter.localeFilterInput.length === 0) {
-                renderList(user.localFriendsList, localeContainer, false);
-            } else if (isMatching(friend.first_name, filter.localeFilterInput) || isMatching(friend.last_name, filter.localeFilterInput)) {
-                localFriendsFilterArr.push(friend)
-                renderList(localFriendsFilterArr, localeContainer, false)
-            }
-        })        
+        if (filter.localeFilterInput.length > 0) {
+            let localFilteredArray = user.localFriendsList.filter((friend)=>{
+                return isMatching(friend.first_name, filter.localeFilterInput) || isMatching(friend.last_name, filter.localeFilterInput)
+            });
+            
+            renderList(localFilteredArray, localeContainer, false)
+        } else {
+            renderList(user.localFriendsList, localeContainer, false);
+        }     
     }
    
 }
