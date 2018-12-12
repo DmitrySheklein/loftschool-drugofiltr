@@ -19,5 +19,5 @@
 
 
 <p>
-	<img src="src/images/promo.jpg" alt="LoftSchool другофильтр">
+	<img src="src/images/promo-gif.gif" alt="LoftSchool другофильтр">
 </p>
